@@ -19,4 +19,5 @@ Route::post('/register', [App\Http\Controllers\Api\AuthController::class, 'regis
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/level', [App\Http\Controllers\Api\LevelController::class, 'index']);
     Route::get('/question/{id}', [App\Http\Controllers\Api\QuestionController::class, 'index']);
+    Route::post('/question-jawab/{id}', [App\Http\Controllers\Api\QuestionController::class, 'create']);
 });
