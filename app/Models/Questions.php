@@ -19,6 +19,6 @@ class Questions extends Model
 
     public function sign(): BelongsTo
     {
-        return $this->belongsTo(traffic_sign::class, 'id_sign');
+        return $this->belongsTo(Traffic_sign::class, 'id_sign');
     } // belongsTo()
 }
