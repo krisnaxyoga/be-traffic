@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DataResource;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Actions\Fortify\PasswordValidationRules;
 
@@ -59,12 +60,17 @@ class AuthController extends Controller
         }
     }
 
+    public function logout(Request $request){
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['success' => true]);
+    }
+
     public function users(){
         try {
 
             //get posts
-            $posts = auth('sanctum')->user();
-
+            $user = Auth::user();
+            $posts = User::where('id', $user->id)->with('user_scores')->get();
             //return collection of posts as a resource
             return new DataResource(true, 'List Data User', $posts);
         }  catch (\Illuminate\Validation\ValidationException $e) {

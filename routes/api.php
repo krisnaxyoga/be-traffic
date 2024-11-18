@@ -17,6 +17,7 @@ Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login'])
 Route::post('/register', [App\Http\Controllers\Api\AuthController::class, 'register']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
+    Route::get('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
     Route::get('/users', [App\Http\Controllers\Api\AuthController::class, 'users']);
     Route::get('/level', [App\Http\Controllers\Api\LevelController::class, 'index']);
     Route::get('/question/{id}', [App\Http\Controllers\Api\QuestionController::class, 'index']);
