@@ -46,7 +46,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => public_path('storage'), // Simpan file di folder 'public/uploads'
-            'url' => env('APP_URL') . '/uploads',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
         ],
         // 'public_direct' => [
