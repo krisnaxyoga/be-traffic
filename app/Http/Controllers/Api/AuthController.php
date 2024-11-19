@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
-use App\Models\Workshop;
+use App\Models\User_scores;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
@@ -70,7 +70,10 @@ class AuthController extends Controller
 
             //get posts
             $user = Auth::user();
-            $posts = User::where('id', $user->id)->with('user_scores')->get();
+            $posts = User::where('id', $user->id)
+                ->with('user_scores')
+                ->addSelect(['total_score' => User_scores::whereColumn('id_user', 'users.id')->selectRaw('sum(score)')])
+                ->get();
             //return collection of posts as a resource
             return new DataResource(true, 'List Data User', $posts);
         }  catch (\Illuminate\Validation\ValidationException $e) {

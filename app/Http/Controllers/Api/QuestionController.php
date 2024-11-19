@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Questions;
 use App\Models\User_progress;
+use App\Models\Levels;
 use App\Models\User_scores;
 use Illuminate\Http\Request;
 
@@ -19,7 +20,7 @@ class QuestionController extends Controller
     public function index($id)
     {
          try {
-            $data = Questions::where('id_level', $id)->get();
+            $data = Questions::where('id_level', $id)->with('level', 'sign')->get();
             return new DataResource(true, 'List Data Questions', $data);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
@@ -45,34 +46,36 @@ class QuestionController extends Controller
         $level = $question->level->level_number;
         $answer = $request->input('answer');
 
+        $levels = Levels::where('level_number', $level)->first();
+
         $userProgress = User_progress::firstOrNew(['id_user' => $user->id, 'id_level' => $question->id_level]);
         $userScores = User_scores::firstOrNew(['id_user' => $user->id, 'id_level' => $question->id_level]);
 
         if ($question->correct_option == $answer) {
             $userProgress->attempts = 1;
-            $userScores->score = 10;
+            $userScores->score = min($userScores->score + 10, $levels->target_score);
             $userScores->completed_at = now();
             $userScores->save();
             $userProgress->save();
-            return response()->json(['message' => 'Benar, point Anda bertambah 1']);
+            if ($levels->target_score <= $userScores->score) {
+                $newLevel = Levels::where('level_number', $level + 1)->first();
+                if ($newLevel) {
+                    $userProgress->id_user = $user->id;
+                    $userProgress->id_level = $newLevel->id;
+                    $userProgress->attempts = $userProgress->attempts++;
+                    $userProgress->save();
+                    User_scores::firstOrCreate(['id_user' => $user->id, 'id_level' => $newLevel->id], [
+                        'score' => 0,
+                        'completed_at' => now(),
+                    ]);
+                }
+            }
+            return response()->json(['message' => 'Benar']);
         } else {
             $userScores->completed_at = now();
             $userScores->save();
             return response()->json(['message' => 'Salah']);
         }
-
-        if ($level > 5) {
-            $userScores->score -= 1000;
-            $userScores->save();
-            return response()->json(['message' => 'point Anda berkurang 1000']);
-        } elseif ($level > 4) {
-            $userScores->score -= 500;
-            $userScores->save();
-            return response()->json(['message' => 'point Anda berkurang 500']);
-        } else {
-            return response()->json(['message' => 'Level tidak sesuai']);
-        }
-
 
     }
 
